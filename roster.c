@@ -5,6 +5,7 @@
 
 /* Helper functions */
 int compare(Student *s1, Student *s2);
+int compareNames(char *first1, char *last1, char *first2, char *last2);
 
 /* Tree functions */
 void insert( Student** root, Student* node );
@@ -18,7 +19,7 @@ void printPostOrder( Student *root );
 void printPreOrder( Student *root );
 
 /* Command functions */
-int add(char *commandLine, Student *houses[]);
+int add(char *first, char* last, int points, int year, int house, Student *houses[]);
 
 int main(int argc, char **argv)
 {
@@ -82,7 +83,36 @@ int main(int argc, char **argv)
 		// Command: add
 		else if (strcmp(command, "add") == 0) 
 		{
-			add(line, houses);
+			char first[1024];
+			char last[1024];
+			int points;
+			int year;
+			char house[1024];
+
+			sscanf(line, "add %s %s %d %d %s", first, last, &points, &year, house);
+
+			// Get corresponding house number, leave it at -1 if none match.
+			int houseNumber = -1;
+			for (int i = 0; i < HOUSES; ++i)
+				if (strcmp(HOUSE_NAMES[i], house) == 0)
+					houseNumber = i;
+
+			// Invalid house name
+			if (houseNumber == -1)
+				printf("Invalid house name: %s\n", house);			
+
+			// Invalid year
+			else if (year > 7 || year < 1)
+				printf("Invalid year: %d\n", year);			
+
+			// Make sure that name is not in the roster already
+			else if (search(houses[houseNumber], first, last) != NULL)
+				printf("Add failed. Student named %s %s already present in roster.\n", 
+						first, last);
+			else { 
+				add(first, last, points, year, houseNumber, houses);
+				printf("Added %s %s to the roster.\n", first, last);
+			}
 		} 
 		else if (strcmp(command, "quit") != 0) 
 		{
@@ -115,6 +145,32 @@ void insert( Student** root, Student* node )
 		// right
 		insert(&(*root)->right, node);
 	}
+}
+
+Student* search( Student* root, char* first, char* last )
+{
+	if (root == NULL)
+		return NULL;
+	
+	int difference = compareNames(root->first, root->last, first, last);
+	
+	if ( difference == 0 )
+		return root;	
+
+	else if ( difference > 0 )
+		return search(root->right, first, last);
+	
+	else	
+		return search(root->left, first, last);
+}
+
+int compareNames(char *first1, char *last1, char *first2, char *last2)
+{
+	int lastDiff = strcmp(last1, last2);
+	if (lastDiff != 0)
+		return lastDiff;
+	else
+		return strcmp(first1, first2);
 }
 
 int compare(Student *s1, Student *s2)
@@ -165,51 +221,19 @@ void printPreOrder( Student *root )
 	}
 }
 
-int add(char *commandLine, Student *houses[])
+int add(char *first, char* last, int points, int year, int house, Student *houses[])
 {
-	char first[1024];
-	char last[1024];
-	int points;
-	int year;
-	char house[1024];
+	Student *s = malloc(sizeof(Student));
+	s->first = strdup(first);
+	s->last = strdup(last);
+	s->points = points;
+	s->year = year;
+	s->house = house;
+	s->left = NULL;
+	s->right = NULL;
 	
-	// Check that formating is right
-	if (sscanf(commandLine, "add %s %s %d %d %s", first, last, &points, &year, house) == 5)
-	{ 
-		// Invalid year
-		if (year > 7 || year < 1)
-		{ 
-			//TODO Correct error handling.
-			printf("Invalid year: %d\n", year);			
-			return 1;
-		}
-
-		// Get corresponding house number, leave it at -1 if none match.
-		int houseNumber = -1;
-		for (int i = 0; i < HOUSES; ++i)
-			if (strcmp(HOUSE_NAMES[i], house) == 0)
-				houseNumber = i;
-
-		// Invalid house name
-		if (houseNumber == -1)
-		{ 
-			//TODO Correct error handling.
-			printf("Invalid house name: %s\n", house);			
-			return 1;
-		}
-	
-		Student *s = malloc(sizeof(Student));
-		s->first = strdup(first);
-		s->last = strdup(last);
-		s->points = points;
-		s->year = year;
-		s->house = houseNumber;	
-		s->left = NULL;
-		s->right = NULL;
-
-		insert(&houses[houseNumber], s);
-
-		printf("Added %s %s to the roster.\n", s->first, s->last);
-	}	
+	if (house < HOUSES + 1)
+		insert(&houses[house], s);
+	 	
 	return 0;
 }
