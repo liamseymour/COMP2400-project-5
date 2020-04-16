@@ -17,6 +17,7 @@ Student *findRightMost(Student *root);
 void insert( Student** root, Student* node );
 Student* search( Student* root, char* first, char* last );
 Student* delete( Student** root, char* first, char* last );
+void freeTree( Student *root );
 
 /* Display functions */
 void printStudent( Student *s );
@@ -198,6 +199,10 @@ int main(int argc, char **argv)
 		}
 	}
 
+	for (int h = 0; h < HOUSES + 1; ++h)
+		freeTree(houses[h]);
+	printf("All data cleared.\n");
+
 	free(line);
 
 	return 0;
@@ -319,6 +324,25 @@ Student* delete( Student** root, char* first, char* last )
 		return delete(&(*root)->left, first, last);
 
 }
+
+/* Frees the entire tree */
+void freeTree(Student *root)
+{
+	// Essentially we need to do a post order traversal and free each
+	// Student from the bottom up.
+	if (root != NULL)
+	{
+		freeTree(root->left);
+		freeTree(root->right);
+		
+		// Names were dynamically allocated by strdup.
+		free(root->first);
+		free(root->last);
+		// Structs were dynamically allocated.
+		free(root);
+	}
+}
+
 
 /* Returns the leftmost node of root (or root if it has not left child).
  * Disconnects the leftmost node from its parent. Returns NULL if root is NULL. */
