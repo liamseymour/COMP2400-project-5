@@ -26,6 +26,7 @@ void printPreOrder( Student *root );
 /* Command functions */
 int add(char *first, char* last, int points, int year, int house, Student *houses[]);
 int load(char *filepath, Student *houses[]);
+int save(char *filepath, Student *houses[]);
 
 int main(int argc, char **argv)
 {
@@ -164,9 +165,20 @@ int main(int argc, char **argv)
 			int error = load(filepath, houses); 
 			if (error != 0)
 				printf("Load failed.\n");
-				// TODO: Fix error codes
 			else
 				printf("Successfully loaded data from file %s.\n", filepath);
+		}
+
+		// Command: save
+		else if (strcmp(command, "save") == 0)
+		{
+			char filepath[2024];
+			sscanf(line, "save %s", filepath);
+			int error = save(filepath, houses); 
+			if (error != 0)
+				printf("Save failed.\n");
+			else
+				printf("Successfully saved data to file %s.\n", filepath);
 		}
 
 		// Non-existent command
@@ -437,7 +449,6 @@ int load(char *filepath, Student *houses[])
 	FILE* in = fopen(filepath, "r");
 	if (in == NULL)
 		return 1;
-		// TODO: Fix error codes.
 	
 	char first[MAX_LINE];
 	char last[MAX_LINE];
@@ -461,14 +472,12 @@ int load(char *filepath, Student *houses[])
 		{
 			printf("Invalid house name: %s\n", house);			
 			return 2;
-			// TODO: Fix error codes.
 		}
 		// Invalid year
 		else if (year > 7 || year < 1)
 		{
 			printf("Invalid year: %d\n", year);			
 			return 3;
-			// TODO: Fix error codes.
 		}
 		// Make sure that name is not in the roster already
 		else if (search(houses[houseNumber], first, last) != NULL) 
@@ -476,12 +485,39 @@ int load(char *filepath, Student *houses[])
 			printf("Add failed. Student named %s %s already present in roster.\n", 
 					first, last);
 			return 4;
-			// TODO: Fix error codes.
 		}
 		else 
 			add(first, last, points, year, houseNumber, houses);
 	}
 
+	fclose(in);
+	return 0;
+}
+
+/* Save all living users into a loadable file at filepath */
+int save(char *filepath, Student *houses[])
+{
+	/* Define a recurrsive function to print the students in each house in preorder
+	 * traversal */
+	void preorderFPrint(Student *root, FILE* out)
+	{
+		if (root != NULL)
+		{
+			fprintf(out, "%s %s %d %d %s\n", root->first, root->last, root->points, 
+					root->year, HOUSE_NAMES[root->house]);
+			preorderFPrint(root->left, out);
+			preorderFPrint(root->right, out);
+		}
+	}
+
+	FILE* out = fopen(filepath, "w");
+	if (out == NULL)
+		return 1;
+
+	for (int house = 0; house < HOUSES; ++house) 
+		preorderFPrint(houses[house], out);
+
+	fclose(out);
 	return 0;
 }
 
