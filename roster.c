@@ -226,12 +226,19 @@ Student* search( Student* root, char* first, char* last )
  * found. */
 Student* delete( Student** root, char* first, char* last )
 {
+
 	// Student is not in the tree.
-	if (root == NULL)
+	if ((*root) == NULL) {
+		fprintf(stderr, "root is NULL\n");
 		return NULL;
+	}
 
 	// The difference between root's name and the student's name we are searching for.
 	int difference = compareNames((*root)->first, (*root)->last, first, last);
+
+	fprintf(stderr, "Deleting %s %s, on root = %s %s\n", first, last, (*root)->first, 
+			(*root)->last);
+
 
 	// Student found
 	if (difference == 0) 
@@ -241,9 +248,7 @@ Student* delete( Student** root, char* first, char* last )
 
 		// Student has no children, so we simply set to NULL.
 		if ((*root)->left == NULL && (*root)->right == NULL)
-		{
 			*root = NULL;
-		}
 
 		// Student has both children. Here we move the leftmost child of the
 		// right subtree to the position of the deleted node. We move the rest of the
@@ -262,6 +267,16 @@ Student* delete( Student** root, char* first, char* last )
 
 			// Move the right tree onto the rightmost node of replacement.
 			findRightMost(replacement)->right = rightTree;
+			
+			fprintf(stderr, "New root = %s %s", 
+				(*root)->first, (*root)->last);
+			if ((*root)->left != NULL)
+				fprintf(stderr, ", left = %s %s", (*root)->left->first, \
+					(*root)->left->last);
+			if ((*root)->right != NULL)
+				fprintf(stderr, ", right = %s %s",(*root)->right->first, 
+					(*root)->right->last);
+			fprintf(stderr, "\n");
 		}
 		
 		// Student has one child, so it takes students place.
@@ -279,18 +294,20 @@ Student* delete( Student** root, char* first, char* last )
 	}
 
 	// Go right.
-	else if (difference > 0)
+	else if (difference < 0)
 		return delete(&(*root)->right, first, last);
 	// Go left.
 	else 
 		return delete(&(*root)->left, first, last);
+
 }
 
 /* Returns the leftmost node of root (or root if it has not left child).
  * Disconnects the leftmost node from its parent. Returns NULL if root is NULL. */
 Student *popLeftMost(Student **root)
 {
-	if ((*root)->left == NULL) {
+	if ((*root)->left == NULL) 
+	{
 		Student *found = *root;
 		*root = NULL;
 		return found;
@@ -319,6 +336,7 @@ Student *findRightMost(Student *root)
 	else
 		return findRightMost(root->right);
 }
+
 
 int compareNames(char *first1, char *last1, char *first2, char *last2)
 {
@@ -428,7 +446,8 @@ int load(char *filepath, Student *houses[])
 	char house[MAX_LINE];
 
 	char line[MAX_LINE] = "";
-	while (fgets(line, MAX_LINE, in) != NULL) {
+	while (fgets(line, MAX_LINE, in) != NULL) 
+	{
 		sscanf(line, "%s %s %d %d %s", first, last, &points, &year, house);
 
 		// Get corresponding house number, leave it at -1 if none match.
