@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "Student.h"
+#include "help.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -27,6 +28,7 @@ void printPreOrder( Student *root );
 int add(char *first, char* last, int points, int year, int house, Student *houses[]);
 int load(char *filepath, Student *houses[]);
 int save(char *filepath, Student *houses[]);
+void help(void);
 
 int main(int argc, char **argv)
 {
@@ -180,6 +182,10 @@ int main(int argc, char **argv)
 			else
 				printf("Successfully saved data to file %s.\n", filepath);
 		}
+
+		// Command: help
+		else if (strcmp(command, "help") == 0)
+			help();
 
 		// Non-existent command
 		else if (strcmp(command, "quit") != 0) 
@@ -521,3 +527,7 @@ int save(char *filepath, Student *houses[])
 	return 0;
 }
 
+void help(void)
+{
+	printf("%s", HELP_MESSAGE);
+}
