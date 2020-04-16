@@ -8,6 +8,9 @@
 /* Helper functions */
 int compare(Student *s1, Student *s2);
 int compareNames(char *first1, char *last1, char *first2, char *last2);
+int parseHouseName(char *name, Student **houses);
+Student *popLeftMost(Student **root);
+Student *findRightMost(Student *root);
 
 /* Tree functions */
 void insert( Student** root, Student* node );
@@ -30,7 +33,7 @@ int main(int argc, char **argv)
 
 	char *line = NULL;
 	size_t lineSize = 0;
-	char command[1024] = "";
+	char command[MAX_LINE] = "";
 	while (strcmp(command, "quit") != 0)
 	{
 		// Get whole command line to work with.
@@ -92,19 +95,15 @@ int main(int argc, char **argv)
 		// Command: add
 		else if (strcmp(command, "add") == 0) 
 		{
-			char first[1024];
-			char last[1024];
+			char first[MAX_LINE];
+			char last[MAX_LINE];
 			int points;
 			int year;
-			char house[1024];
+			char house[MAX_LINE];
 
 			sscanf(line, "add %s %s %d %d %s", first, last, &points, &year, house);
 
-			// Get corresponding house number, leave it at -1 if none match.
-			int houseNumber = -1;
-			for (int i = 0; i < HOUSES; ++i)
-				if (strcmp(HOUSE_NAMES[i], house) == 0)
-					houseNumber = i;
+			int houseNumber = parseHouseName(house, houses);
 
 			// Invalid house name
 			if (houseNumber == -1)
@@ -118,11 +117,44 @@ int main(int argc, char **argv)
 			else if (search(houses[houseNumber], first, last) != NULL)
 				printf("Add failed. Student named %s %s already present in roster.\n", 
 						first, last);
-			else { 
+			else 
+			{ 
 				add(first, last, points, year, houseNumber, houses);
 				printf("Added %s %s to roster.\n", first, last);
 			}
 		} 
+
+		// Command: kill
+		else if (strcmp(command, "kill") == 0)
+		{
+			char first[MAX_LINE];
+			char last[MAX_LINE];
+			char houseName[MAX_LINE];
+
+			sscanf(line, "kill %s %s %s", first, last, houseName);
+
+			int houseNumber = parseHouseName(houseName, houses);
+
+			// Invalid house name
+			if (houseNumber == -1)
+				printf("Invalid house name: %s\n", houseName);			
+		
+			else
+			{
+				Student *removed = delete(&houses[houseNumber], first, last);
+				if (removed == NULL)
+					printf("Kill failed. %s %s was not found in %s House\n", first, last, 
+							houseName);
+				else
+				{
+					removed->left = NULL;
+					removed->right = NULL;
+					insert(&houses[HOUSES], removed);
+					printf("Moved %s %s to list of deceased students.\n", first, last);
+				}
+			}
+
+		}
 
 		// Command: load
 		else if (strcmp(command, "load") == 0)
@@ -190,6 +222,104 @@ Student* search( Student* root, char* first, char* last )
 		return search(root->left, first, last);
 }
 
+/* Delete a student with first name last name, and return that student, or NULL if not 
+ * found. */
+Student* delete( Student** root, char* first, char* last )
+{
+	// Student is not in the tree.
+	if (root == NULL)
+		return NULL;
+
+	// The difference between root's name and the student's name we are searching for.
+	int difference = compareNames((*root)->first, (*root)->last, first, last);
+
+	// Student found
+	if (difference == 0) 
+	{
+		// To return.
+		Student *found = *root; 
+
+		// Student has no children, so we simply set to NULL.
+		if ((*root)->left == NULL && (*root)->right == NULL)
+		{
+			*root = NULL;
+		}
+
+		// Student has both children. Here we move the leftmost child of the
+		// right subtree to the position of the deleted node. We move the rest of the
+		// right sub tree to the rightmost of the leftmost node we found (or itself if it
+		// has no right children). 
+		else if ((*root)->left != NULL && (*root)->right != NULL)
+		{
+			// First get reference to right subtree
+			Student *rightTree = (*root)->right;
+
+			// Get the leftmost of the right subtree and disconnect it from it's parent.
+			// This will replace root.
+			Student *replacement = popLeftMost(&rightTree);
+			replacement->left = (*root)->left;
+			*root = replacement;
+
+			// Move the right tree onto the rightmost node of replacement.
+			findRightMost(replacement)->right = rightTree;
+		}
+		
+		// Student has one child, so it takes students place.
+		else 
+		{
+			// Disambiguate which child is not NULL.
+			Student *child = (*root)->right;
+			if ((*root)->left != NULL)
+				child = (*root)->left;
+
+			*root = child;
+		}
+
+		return found;
+	}
+
+	// Go right.
+	else if (difference > 0)
+		return delete(&(*root)->right, first, last);
+	// Go left.
+	else 
+		return delete(&(*root)->left, first, last);
+}
+
+/* Returns the leftmost node of root (or root if it has not left child).
+ * Disconnects the leftmost node from its parent. Returns NULL if root is NULL. */
+Student *popLeftMost(Student **root)
+{
+	if ((*root)->left == NULL) {
+		Student *found = *root;
+		*root = NULL;
+		return found;
+	}
+
+	if ((*root)->left->left == NULL)
+	{
+		Student *found = (*root)->left;
+		(*root)->left = NULL;
+		return found;
+	}
+	else
+		return popLeftMost(&(*root)->left);
+}
+
+/* Return the rightmost node of root (or root if it has no right child).
+ * Returns NULL if root is NULL. */
+Student *findRightMost(Student *root)
+{
+	if (root == NULL)
+		return NULL;
+
+	if (root->right == NULL)
+		return root;
+
+	else
+		return findRightMost(root->right);
+}
+
 int compareNames(char *first1, char *last1, char *first2, char *last2)
 {
 	int lastDiff = strcmp(last1, last2);
@@ -210,11 +340,24 @@ int compare(Student *s1, Student *s2)
 
 void printStudent( Student *s )
 {
-	char name[1024];
+	char name[MAX_LINE];
 	sprintf(name, "%s %s", s->first, s->last);
 
 	printf("%-24s Points: %d\tYear: %d\tHouse: %s\n", name, s->points, s->year, 
 			HOUSE_NAMES[s->house]);
+}
+
+/* Parses house name into the cooresponding integer representation. If the house name is 
+ * invalid, returns -1. */
+int parseHouseName(char *name, Student **houses)
+{
+	// Get corresponding house number, leave it at -1 if none match.
+	int houseNumber = -1;
+	for (int i = 0; i < HOUSES; ++i)
+		if (strcmp(HOUSE_NAMES[i], name) == 0)
+			houseNumber = i;
+
+	return houseNumber;
 }
 
 /* Prints an in-order traversal of the Student tree root */
@@ -245,8 +388,8 @@ void printPreOrder( Student *root )
 	if (root != NULL) 
 	{
 		printStudent( root );
-		printPostOrder( root->left );
-		printPostOrder( root->right );
+		printPreOrder( root->left );
+		printPreOrder( root->right );
 	}
 }
 
@@ -278,11 +421,11 @@ int load(char *filepath, Student *houses[])
 		return 1;
 		// TODO: Fix error codes.
 	
-	char first[1024];
-	char last[1024];
+	char first[MAX_LINE];
+	char last[MAX_LINE];
 	int points;
 	int year;
-	char house[1024];
+	char house[MAX_LINE];
 
 	char line[MAX_LINE] = "";
 	while (fgets(line, MAX_LINE, in) != NULL) {
