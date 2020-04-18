@@ -160,6 +160,15 @@ int main(int argc, char **argv)
 
 		}
 
+		// Command: clear
+		else if (strcmp(command, "clear") == 0) {
+			for (int h = 0; h < HOUSES+1; ++h) {
+				freeTree(houses[h]);
+				houses[h] = NULL;
+			}
+			printf("All data cleared.\n");
+		}
+
 		// Command: load
 		else if (strcmp(command, "load") == 0)
 		{
@@ -340,6 +349,7 @@ void freeTree(Student *root)
 		free(root->last);
 		// Structs were dynamically allocated.
 		free(root);
+		root = NULL;
 	}
 }
 
