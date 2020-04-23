@@ -12,6 +12,7 @@ int compareNames(char *first1, char *last1, char *first2, char *last2);
 int parseHouseName(char *name);
 Student *popLeftMost(Student **root);
 Student *findRightMost(Student *root);
+int score(Student* root);
 
 /* Tree functions */
 void insert( Student** root, Student* node );
@@ -242,6 +243,14 @@ int main(int argc, char **argv)
             first[0] = '\0';
             last[0] = '\0';
             house[0] = '\0';
+        }
+        // Command: score
+        else if (strcmp(command, "score") == 0)
+        {
+            for(int i = 0; i < 4; ++i)
+            {
+                printf("%s House:\t%d\n",HOUSE_NAMES[i], score(houses[i]));
+            }
         }
 
 		// Command: help
@@ -606,6 +615,14 @@ int save(char *filepath, Student *houses[])
 
 	fclose(out);
 	return 0;
+}
+
+int score(Student* root)
+{
+    if (root == NULL)
+        return 0;
+    else
+        return root->points + score(root->left) + score(root->right);
 }
 
 void help(void)
