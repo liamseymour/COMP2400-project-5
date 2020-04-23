@@ -302,7 +302,7 @@ Student* search( Student* root, char* first, char* last )
 	if (root == NULL)
 		return NULL;
 	
-	int difference = compareNames(root->first, root->last, first, last);
+	int difference = compareNames(first, last, root->first, root->last);
 	
 	if ( difference == 0 )
 		return root;	
