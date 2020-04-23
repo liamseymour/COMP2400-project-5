@@ -53,6 +53,7 @@ int main(void)
 		if (strcmp(command, "inorder") == 0) 
 		{
 			printf("Inorder print-out of roster:\n");
+            
 			// Print each house
 			for (int i = 0; i < HOUSES; ++i) 
 			{
@@ -69,6 +70,7 @@ int main(void)
 		else if (strcmp(command, "preorder") == 0) 
 		{
 			printf("Preorder print-out of roster:\n");
+            
 			// Print each house
 			for (int i = 0; i < HOUSES; ++i) 
 			{
@@ -85,6 +87,7 @@ int main(void)
 		else if (strcmp(command, "postorder") == 0) 
 		{
 			printf("Postorder print-out of roster:\n");
+            
 			// Print each house
 			for (int i = 0; i < HOUSES; ++i) 
 			{
@@ -162,6 +165,7 @@ int main(void)
 		}
 
 		// Command: clear
+
 		else if (strcmp(command, "clear") == 0) 
 		{
 			for (int h = 0; h < HOUSES+1; ++h)
@@ -202,9 +206,7 @@ int main(void)
             int houseNumber = parseHouseName(house);
             
             if (houseNumber == -1)
-            {
                 printf("Find failed. Invalid house: %s\n", house);
-            }
             else
             {
                 Student* found = search(houses[houseNumber], first, last);
@@ -232,9 +234,7 @@ int main(void)
             int houseNumber = parseHouseName(house);
             
             if (houseNumber == -1)
-            {
                 printf("Point change failed. Invalid house: %s\n", house);
-            }
             else
             {
                 Student* found = search(houses[houseNumber], first, last);
@@ -253,9 +253,7 @@ int main(void)
         else if (strcmp(command, "score") == 0)
         {
             for(int i = 0; i < HOUSES; ++i)
-            {
-                printf("%s House:\t%d\n",HOUSE_NAMES[i], score(houses[i]));
-            }
+              printf("%s House:\t%d\n",HOUSE_NAMES[i], score(houses[i]));
         }
 
 		// Command: help
@@ -323,6 +321,7 @@ Student* delete( Student** root, char* first, char* last )
 {
 
 	// Student is not in the tree.
+
 	if ((*root) == NULL) 
 		return NULL;
 
@@ -455,7 +454,7 @@ int compare(Student *s1, Student *s2)
     return compareNames(s1->first, s1->last, s2->first, s2->last);
 }
 
-void printStudent( Student *s )
+void printStudent(Student *s)
 {
 	char name[MAX_LINE];
 	sprintf(name, "%s %s", s->first, s->last);
@@ -477,35 +476,35 @@ int parseHouseName(char *name)
 }
 
 /* Prints an in-order traversal of the Student tree root */
-void printInOrder( Student *root )
+void printInOrder(Student *root)
 {
 	if (root != NULL) 
 	{
-		printInOrder( root->left );
-		printStudent( root );
-		printInOrder( root->right );
+		printInOrder(root->left);
+		printStudent(root);
+		printInOrder(root->right);
 	}
 } 
 
 /* Prints an post-order traversal of the Student tree root */
-void printPostOrder( Student *root )
+void printPostOrder(Student *root)
 {
 	if (root != NULL) 
 	{
-		printPostOrder( root->left );
-		printPostOrder( root->right );
-		printStudent( root );
+		printPostOrder(root->left);
+		printPostOrder(root->right);
+		printStudent(root);
 	}
 }
 
 /* Prints an pre-order traversal of the Student tree root */
-void printPreOrder( Student *root )
+void printPreOrder(Student *root)
 {
 	if (root != NULL) 
 	{
-		printStudent( root );
-		printPreOrder( root->left );
-		printPreOrder( root->right );
+		printStudent(root);
+		printPreOrder(root->left);
+		printPreOrder(root->right);
 	}
 }
 
