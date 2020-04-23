@@ -32,7 +32,7 @@ int load(char *filepath, Student *houses[]);
 int save(char *filepath, Student *houses[]);
 void help(void);
 
-int main(int argc, char **argv)
+int main(void)
 {
 	Student *houses[5] = {NULL, NULL, NULL, NULL, NULL};
 
@@ -289,17 +289,15 @@ void insert( Student** root, Student* node )
         *root = node;
 		return;
     }
+
 	int difference = compare(node, *root);
+	// left
 	if ( difference < 0) 
-	{
-		// left
 		insert(&(*root)->left, node);
-	} 
+
+	// right
 	else 
-	{
-		// right
 		insert(&(*root)->right, node);
-	}
 }
 
 Student* search( Student* root, char* first, char* last )
@@ -439,6 +437,8 @@ Student *findRightMost(Student *root)
 }
 
 
+/* Return the difference between student 1 and student 2's last names.
+ * Ties are broken by the first name */
 int compareNames(char *first1, char *last1, char *first2, char *last2)
 {
 	int lastDiff = strcmp(last1, last2);
@@ -448,6 +448,8 @@ int compareNames(char *first1, char *last1, char *first2, char *last2)
 		return strcmp(first1, first2);
 }
 
+/* Return the difference between student 1 and student 2's last names.
+ * Ties are broken by the first name */
 int compare(Student *s1, Student *s2)
 {
     return compareNames(s1->first, s1->last, s2->first, s2->last);
@@ -606,6 +608,7 @@ int save(char *filepath, Student *houses[])
 	return 0;
 }
 
+/* Return the total score of subtree, root. */
 int score(Student* root)
 {
     if (root == NULL)
@@ -614,6 +617,7 @@ int score(Student* root)
         return root->points + score(root->left) + score(root->right);
 }
 
+/* Print the help dialogue. */
 void help(void)
 {
 	printf("%s", HELP_MESSAGE);
