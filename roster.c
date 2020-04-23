@@ -32,7 +32,7 @@ int load(char *filepath, Student *houses[]);
 int save(char *filepath, Student *houses[]);
 void help(void);
 
-int main(int argc, char **argv)
+int main(void)
 {
 	Student *houses[5] = {NULL, NULL, NULL, NULL, NULL};
 
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 			{
 				Student *removed = delete(&houses[houseNumber], first, last);
 				if (removed == NULL)
-					printf("Kill failed. %s %s was not found in %s House\n", first, last, 
+					printf("Kill failed. %s %s was not found in %s House\n", first, last,
 							houseName);
 				else
 				{
@@ -165,8 +165,9 @@ int main(int argc, char **argv)
 		}
 
 		// Command: clear
-		else if (strcmp(command, "clear") == 0)
-        {
+
+		else if (strcmp(command, "clear") == 0) 
+		{
 			for (int h = 0; h < HOUSES+1; ++h)
 				freeTree(&houses[h]);
 			printf("All data cleared.\n");
@@ -210,7 +211,8 @@ int main(int argc, char **argv)
             {
                 Student* found = search(houses[houseNumber], first, last);
                 if (found == NULL)
-                    printf("Find failed. %s %s was not found in %s House\n", first, last, house);
+                    printf("Find failed. %s %s was not found in %s House\n", 
+							first, last, house);
                 else
                     printStudent(found);
             }
@@ -220,6 +222,7 @@ int main(int argc, char **argv)
             house[0] = '\0';
             
         }
+
         // Command: points
         else if (strcmp(command, "points") == 0)
         {
@@ -236,7 +239,8 @@ int main(int argc, char **argv)
             {
                 Student* found = search(houses[houseNumber], first, last);
                 if (found == NULL)
-                    printf("Point change failed. %s %s was not found in %s House\n", first, last, house);
+                    printf("Point change failed. %s %s was not found in %s House\n", 
+							first, last, house);
                 else
                     found->points = found->points + points;
             }
@@ -244,11 +248,12 @@ int main(int argc, char **argv)
             last[0] = '\0';
             house[0] = '\0';
         }
-        // Command: score
+        
+		// Command: score
         else if (strcmp(command, "score") == 0)
         {
             for(int i = 0; i < HOUSES; ++i)
-                printf("%s House:\t%d\n",HOUSE_NAMES[i], score(houses[i]));
+              printf("%s House:\t%d\n",HOUSE_NAMES[i], score(houses[i]));
         }
 
 		// Command: help
@@ -282,17 +287,15 @@ void insert( Student** root, Student* node )
         *root = node;
 		return;
     }
+
 	int difference = compare(node, *root);
+	// left
 	if ( difference < 0) 
-	{
-		// left
 		insert(&(*root)->left, node);
-	} 
+
+	// right
 	else 
-	{
-		// right
 		insert(&(*root)->right, node);
-	}
 }
 
 Student* search( Student* root, char* first, char* last )
@@ -318,18 +321,12 @@ Student* delete( Student** root, char* first, char* last )
 {
 
 	// Student is not in the tree.
-	if ((*root) == NULL)
-    {
-		fprintf(stderr, "root is NULL\n");
+
+	if ((*root) == NULL) 
 		return NULL;
-	}
 
 	// The difference between root's name and the student's name we are searching for.
 	int difference = compareNames((*root)->first, (*root)->last, first, last);
-
-	fprintf(stderr, "Deleting %s %s, on root = %s %s\n", first, last, (*root)->first, 
-			(*root)->last);
-
 
 	// Student found
 	if (difference == 0) 
@@ -358,16 +355,6 @@ Student* delete( Student** root, char* first, char* last )
 
 			// Move the right tree onto the rightmost node of replacement.
 			findRightMost(replacement)->right = rightTree;
-			
-			fprintf(stderr, "New root = %s %s", 
-				(*root)->first, (*root)->last);
-			if ((*root)->left != NULL)
-				fprintf(stderr, ", left = %s %s", (*root)->left->first, \
-					(*root)->left->last);
-			if ((*root)->right != NULL)
-				fprintf(stderr, ", right = %s %s",(*root)->right->first, 
-					(*root)->right->last);
-			fprintf(stderr, "\n");
 		}
 		
 		// Student has one child, so it takes students place.
@@ -449,6 +436,8 @@ Student *findRightMost(Student *root)
 }
 
 
+/* Return the difference between student 1 and student 2's last names.
+ * Ties are broken by the first name */
 int compareNames(char *first1, char *last1, char *first2, char *last2)
 {
 	int lastDiff = strcmp(last1, last2);
@@ -458,6 +447,8 @@ int compareNames(char *first1, char *last1, char *first2, char *last2)
 		return strcmp(first1, first2);
 }
 
+/* Return the difference between student 1 and student 2's last names.
+ * Ties are broken by the first name */
 int compare(Student *s1, Student *s2)
 {
     return compareNames(s1->first, s1->last, s2->first, s2->last);
@@ -616,6 +607,7 @@ int save(char *filepath, Student *houses[])
 	return 0;
 }
 
+/* Return the total score of subtree, root. */
 int score(Student* root)
 {
     if (root == NULL)
@@ -624,6 +616,7 @@ int score(Student* root)
         return root->points + score(root->left) + score(root->right);
 }
 
+/* Print the help dialogue. */
 void help(void)
 {
 	printf("%s", HELP_MESSAGE);
