@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 			{
 				Student *removed = delete(&houses[houseNumber], first, last);
 				if (removed == NULL)
-					printf("Kill failed. %s %s was not found in %s House\n", first, last, 
+					printf("Kill failed. %s %s was not found in %s House\n", first, last,
 							houseName);
 				else
 				{
@@ -162,7 +162,8 @@ int main(int argc, char **argv)
 		}
 
 		// Command: clear
-		else if (strcmp(command, "clear") == 0) {
+		else if (strcmp(command, "clear") == 0) 
+		{
 			for (int h = 0; h < HOUSES+1; ++h)
 				freeTree(&houses[h]);
 			printf("All data cleared.\n");
@@ -208,7 +209,8 @@ int main(int argc, char **argv)
             {
                 Student* found = search(houses[houseNumber], first, last);
                 if (found == NULL)
-                    printf("Find failed. %s %s was not found in %s House\n", first, last, house);
+                    printf("Find failed. %s %s was not found in %s House\n", 
+							first, last, house);
                 else
                     printStudent(found);
             }
@@ -218,6 +220,7 @@ int main(int argc, char **argv)
             house[0] = '\0';
             
         }
+
         // Command: points
         else if (strcmp(command, "points") == 0)
         {
@@ -236,7 +239,8 @@ int main(int argc, char **argv)
             {
                 Student* found = search(houses[houseNumber], first, last);
                 if (found == NULL)
-                    printf("Point change failed. %s %s was not found in %s House\n", first, last, house);
+                    printf("Point change failed. %s %s was not found in %s House\n", 
+							first, last, house);
                 else
                     found->points = found->points + points;
             }
@@ -244,10 +248,11 @@ int main(int argc, char **argv)
             last[0] = '\0';
             house[0] = '\0';
         }
-        // Command: score
+        
+		// Command: score
         else if (strcmp(command, "score") == 0)
         {
-            for(int i = 0; i < 4; ++i)
+            for(int i = 0; i < HOUSES; ++i)
             {
                 printf("%s House:\t%d\n",HOUSE_NAMES[i], score(houses[i]));
             }
@@ -320,17 +325,11 @@ Student* delete( Student** root, char* first, char* last )
 {
 
 	// Student is not in the tree.
-	if ((*root) == NULL) {
-		fprintf(stderr, "root is NULL\n");
+	if ((*root) == NULL) 
 		return NULL;
-	}
 
 	// The difference between root's name and the student's name we are searching for.
 	int difference = compareNames((*root)->first, (*root)->last, first, last);
-
-	fprintf(stderr, "Deleting %s %s, on root = %s %s\n", first, last, (*root)->first, 
-			(*root)->last);
-
 
 	// Student found
 	if (difference == 0) 
@@ -359,16 +358,6 @@ Student* delete( Student** root, char* first, char* last )
 
 			// Move the right tree onto the rightmost node of replacement.
 			findRightMost(replacement)->right = rightTree;
-			
-			fprintf(stderr, "New root = %s %s", 
-				(*root)->first, (*root)->last);
-			if ((*root)->left != NULL)
-				fprintf(stderr, ", left = %s %s", (*root)->left->first, \
-					(*root)->left->last);
-			if ((*root)->right != NULL)
-				fprintf(stderr, ", right = %s %s",(*root)->right->first, 
-					(*root)->right->last);
-			fprintf(stderr, "\n");
 		}
 		
 		// Student has one child, so it takes students place.
