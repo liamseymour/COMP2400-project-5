@@ -9,7 +9,7 @@
 /* Helper functions */
 int compare(Student *s1, Student *s2);
 int compareNames(char *first1, char *last1, char *first2, char *last2);
-int parseHouseName(char *name, Student **houses);
+int parseHouseName(char *name);
 Student *popLeftMost(Student **root);
 Student *findRightMost(Student *root);
 
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 
 			sscanf(line, "add %s %s %d %d %s", first, last, &points, &year, house);
 
-			int houseNumber = parseHouseName(house, houses);
+			int houseNumber = parseHouseName(house);
 
 			// Invalid house name
 			if (houseNumber == -1)
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
 
 			sscanf(line, "kill %s %s %s", first, last, houseName);
 
-			int houseNumber = parseHouseName(houseName, houses);
+			int houseNumber = parseHouseName(houseName);
 
 			// Invalid house name
 			if (houseNumber == -1)
@@ -190,6 +190,59 @@ int main(int argc, char **argv)
 			else
 				printf("Successfully saved data to file %s.\n", filepath);
 		}
+        // Command: find
+        else if (strcmp(command, "find") == 0)
+        {
+            char first[MAX_LINE];
+            char last[MAX_LINE];
+            char house[MAX_LINE];
+            sscanf(line, "find %s %s %s", first, last, house);
+            int houseNumber = parseHouseName(house);
+            
+            if (houseNumber == -1)
+            {
+                printf("Find failed. Invalid house: %s\n", house);
+            }
+            else
+            {
+                Student* found = search(houses[houseNumber], first, last);
+                if (found == NULL)
+                    printf("Find failed. %s %s was not found in %s House\n", first, last, house);
+                else
+                    printStudent(found);
+            }
+
+            first[0] = '\0';
+            last[0] = '\0';
+            house[0] = '\0';
+            
+        }
+        // Command: points
+        else if (strcmp(command, "points") == 0)
+        {
+            char first[MAX_LINE];
+            char last[MAX_LINE];
+            char house[MAX_LINE];
+            int points = 0;
+            sscanf(line, "points %s %s %s %d", first, last, house, &points);
+            int houseNumber = parseHouseName(house);
+            
+            if (houseNumber == -1)
+            {
+                printf("Point change failed. Invalid house: %s\n", house);
+            }
+            else
+            {
+                Student* found = search(houses[houseNumber], first, last);
+                if (found == NULL)
+                    printf("Point change failed. %s %s was not found in %s House\n", first, last, house);
+                else
+                    found->points = found->points + points;
+            }
+            first[0] = '\0';
+            last[0] = '\0';
+            house[0] = '\0';
+        }
 
 		// Command: help
 		else if (strcmp(command, "help") == 0)
@@ -399,11 +452,7 @@ int compareNames(char *first1, char *last1, char *first2, char *last2)
 
 int compare(Student *s1, Student *s2)
 {
-	int lastDiff = strcmp(s1->last, s2->last);
-	if (lastDiff != 0)
-		return lastDiff;
-	else
-		return strcmp(s1->first, s2->first);
+    return compareNames(s1->first, s1->last, s2->first, s2->last);
 }
 
 void printStudent( Student *s )
@@ -417,15 +466,14 @@ void printStudent( Student *s )
 
 /* Parses house name into the cooresponding integer representation. If the house name is 
  * invalid, returns -1. */
-int parseHouseName(char *name, Student **houses)
+int parseHouseName(char *name)
 {
 	// Get corresponding house number, leave it at -1 if none match.
-	int houseNumber = -1;
 	for (int i = 0; i < HOUSES; ++i)
 		if (strcmp(HOUSE_NAMES[i], name) == 0)
-			houseNumber = i;
+            return i;
 
-	return houseNumber;
+	return -1;
 }
 
 /* Prints an in-order traversal of the Student tree root */
@@ -532,21 +580,22 @@ int load(char *filepath, Student *houses[])
 	return 0;
 }
 
+/* Define a recurrsive function to print the students in each house in preorder
+ * traversal */
+void preorderFPrint(Student *root, FILE* out)
+{
+    if (root != NULL)
+    {
+        fprintf(out, "%s %s %d %d %s\n", root->first, root->last, root->points,
+                root->year, HOUSE_NAMES[root->house]);
+        preorderFPrint(root->left, out);
+        preorderFPrint(root->right, out);
+    }
+}
+
 /* Save all living users into a loadable file at filepath */
 int save(char *filepath, Student *houses[])
 {
-	/* Define a recurrsive function to print the students in each house in preorder
-	 * traversal */
-	void preorderFPrint(Student *root, FILE* out)
-	{
-		if (root != NULL)
-		{
-			fprintf(out, "%s %s %d %d %s\n", root->first, root->last, root->points, 
-					root->year, HOUSE_NAMES[root->house]);
-			preorderFPrint(root->left, out);
-			preorderFPrint(root->right, out);
-		}
-	}
 
 	FILE* out = fopen(filepath, "w");
 	if (out == NULL)
